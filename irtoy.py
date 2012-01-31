@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/usr/bin/python
 
 import serial
 import time
