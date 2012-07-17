@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 
 import serial
 import time
@@ -18,13 +18,13 @@ def reset(p):
 	#p.write('\xff' * 10)
 	p.write('\x00' * 10)
 	p.write('s')
-	print repr(p.read(3))
+	print(repr(p.read(3)))
 	p.write('\x24')
 	p.write('\x25')
 	p.write('\x26')
 
 	p.write('\x23')
-	print 'kuku', repr(p.read(8))
+	print('kuku %s' % repr(p.read(8)))
 #enddef
 
 def send(p, buf):
@@ -32,14 +32,14 @@ def send(p, buf):
 
 	req = ord(p.read(1))
 	while req and buf:
-		print req
+		print(req)
 		p.write(buf[:req])
 		buf = buf[req:]
 		req = ord(p.read(1))
 	#endwhile
 
-	print repr(p.read(3))
-	print repr(p.read(1))
+	print(repr(p.read(3)))
+	print(repr(p.read(1)))
 #enddef
 
 def main():
@@ -48,12 +48,12 @@ def main():
 	fn = sys.argv[2]
 
 	if command not in ('recv', 'send'):
-		print 'unknown command %s!' % command
+		print('unknown command %s!' % command)
 		return
 	#endif
 
 	if not fn:
-		print 'filename not specified!'
+		print('filename not specified!')
 		return
 	#endif
 
@@ -67,7 +67,7 @@ def main():
 	elif command == 'send':
 		f = open(fn, 'r')
 		buf = f.read(10000)
-		print repr(buf), len(buf)
+		print('%s %s' % (repr(buf), len(buf)))
 		f.close()
 		send(p, buf)
 		time.sleep(1)
@@ -78,10 +78,10 @@ def main():
 	buf = ''
 	while 1:
 		buf += p.read(1)
-		print '.',
+		print('.')
 
 		if buf.endswith('\xff\xff'):
-			print repr(buf), len(buf)
+			print('%s %s' % (repr(buf), len(buf)))
 
 			f.write(buf)
 			f.close()
