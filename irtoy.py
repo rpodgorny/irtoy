@@ -70,6 +70,7 @@ def main():
 		print('%s %s' % (repr(buf), len(buf)))
 		f.close()
 		send(p, buf)
+		p.write('\x00' * 10)
 		time.sleep(1)
 		p.close()
 		return
