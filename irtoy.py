@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 
 import serial
 import time
@@ -16,19 +16,19 @@ def read_all(p):
 
 def reset(p):
 	#p.write('\xff' * 10)
-	p.write('\x00' * 10)
-	p.write('s')
+	p.write(b'\x00' * 10)
+	p.write(b's')
 	print(repr(p.read(3)))
-	p.write('\x24')
-	p.write('\x25')
-	p.write('\x26')
+	p.write(b'\x24')
+	p.write(b'\x25')
+	p.write(b'\x26')
 
-	p.write('\x23')
+	p.write(b'\x23')
 	print('kuku %s' % repr(p.read(8)))
 #enddef
 
 def send(p, buf):
-	p.write('\x03')
+	p.write(b'\x03')
 
 	req = ord(p.read(1))
 	while req and buf:
@@ -63,14 +63,14 @@ def main():
 	reset(p)
 
 	if command == 'recv':
-		f = open(fn, 'w')
+		f = open(fn, 'wb')
 	elif command == 'send':
-		f = open(fn, 'r')
+		f = open(fn, 'rb')
 		buf = f.read(10000)
 		print('%s %s' % (repr(buf), len(buf)))
 		f.close()
 		send(p, buf)
-		p.write('\x00' * 10)
+		p.write(b'\x00' * 10)
 		time.sleep(1)
 		p.close()
 		return
@@ -81,7 +81,7 @@ def main():
 		buf += p.read(1)
 		print('.')
 
-		if buf.endswith('\xff\xff'):
+		if buf.endswith(b'\xff\xff'):
 			print('%s %s' % (repr(buf), len(buf)))
 
 			f.write(buf)
