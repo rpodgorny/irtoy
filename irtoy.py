@@ -23,8 +23,8 @@ def reset(p):
 	p.write(b'\x25')
 	p.write(b'\x26')
 
-	p.write(b'\x23')
-	print('kuku %s' % repr(p.read(8)))
+	#p.write(b'\x23')
+	#print('kuku %s' % repr(p.read(8)))
 #enddef
 
 def send(p, buf):
@@ -38,40 +38,55 @@ def send(p, buf):
 		req = ord(p.read(1))
 	#endwhile
 
-	print(repr(p.read(3)))
+	res = p.read(3)
+	transmitted = (res[1] << 8) + res[2]
+	print(transmitted)
+
 	print(repr(p.read(1)))
 #enddef
 
 def main():
 	global command, fn
 	command = sys.argv[1]
-	fn = sys.argv[2]
+	fns = sys.argv[2:]
 
 	if command not in ('recv', 'send'):
 		print('unknown command %s!' % command)
 		return
 	#endif
 
-	if not fn:
-		print('filename not specified!')
+	if not fns:
+		print('filename(s) not specified!')
 		return
 	#endif
 
 	p = serial.Serial(dev)
-	#while p.inWaiting(): p.read(1)
 
+	print('consuming leftover bytes')
+	while p.inWaiting():
+		p.read(1)
+		print('.')
+	#endwhile
+
+	print('reset')
 	reset(p)
 
 	if command == 'recv':
-		f = open(fn, 'wb')
+		print('recv')
+		f = open(fns[0], 'wb')
 	elif command == 'send':
-		f = open(fn, 'rb')
-		buf = f.read(10000)
-		print('%s %s' % (repr(buf), len(buf)))
-		f.close()
-		send(p, buf)
+		print('send')
+		for fn in fns:
+			f = open(fn, 'rb')
+			buf = f.read(10000)
+			print('%s %s' % (repr(buf), len(buf)))
+			f.close()
+			send(p, buf)
+			time.sleep(1)
+		#endfor
+
 		p.write(b'\x00' * 10)
-		time.sleep(1)
+		#time.sleep(1)
 		p.close()
 		return
 	#endif
