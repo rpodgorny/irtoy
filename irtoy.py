@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import serial
 import time
@@ -10,9 +10,11 @@ command = None
 fn = None
 
 
+# TODO: unused?
 def read_all(p):
-	ret = ''
-	while p.inWaiting(): ret += p.read(1)
+	ret = b''
+	while p.inWaiting():
+		ret += p.read(1)
 	return ret
 
 
@@ -53,54 +55,50 @@ def main():
 
 	if command not in ('recv', 'send'):
 		print('unknown command %s!' % command)
-		return
+		return 1
 
 	if not fns:
 		print('filename(s) not specified!')
-		return
+		return 1
 
 	p = serial.Serial(dev)
 
 	print('consuming leftover bytes')
 	while p.inWaiting():
 		p.read(1)
-		print('.')
+		sys.stdout.write('.')
+		sys.stdout.flush()
 
 	print('reset')
 	reset(p)
 
 	if command == 'recv':
 		print('recv')
-		f = open(fns[0], 'wb')
+		buf = b''
+		while 1:
+			buf += p.read(1)
+			sys.stdout.write('.')
+			sys.stdout.flush()
+			if buf.endswith(b'\xff\xff'):
+				print('%s %s' % (repr(buf), len(buf)))
+				break
+		with open(fns[0], 'wb') as f:
+			f.write(buf)
 	elif command == 'send':
 		print('send')
 		for fn in fns:
-			f = open(fn, 'rb')
-			buf = f.read(10000)
+			with open(fn, 'rb') as f:
+				buf = f.read(10000)
 			print('%s %s' % (repr(buf), len(buf)))
-			f.close()
 			send(p, buf)
 			time.sleep(1)
 
 		p.write(b'\x00' * 10)
 		#time.sleep(1)
-		p.close()
-		return
-
-	buf = b''
-	while 1:
-		buf += p.read(1)
-		print('.')
-
-		if buf.endswith(b'\xff\xff'):
-			print('%s %s' % (repr(buf), len(buf)))
-
-			f.write(buf)
-			f.close()
-			break
 
 	p.close()
+	return 0
 
 
 if __name__ == '__main__':
-	main()
+	sys.exit(main())
