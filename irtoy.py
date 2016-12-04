@@ -4,15 +4,17 @@ import serial
 import time
 import sys
 
+
 dev = '/dev/ttyACM0'
 command = None
 fn = None
+
 
 def read_all(p):
 	ret = ''
 	while p.inWaiting(): ret += p.read(1)
 	return ret
-#enddef
+
 
 def reset(p):
 	#p.write('\xff' * 10)
@@ -25,7 +27,7 @@ def reset(p):
 
 	#p.write(b'\x23')
 	#print('kuku %s' % repr(p.read(8)))
-#enddef
+
 
 def send(p, buf):
 	p.write(b'\x03')
@@ -36,14 +38,13 @@ def send(p, buf):
 		p.write(buf[:req])
 		buf = buf[req:]
 		req = ord(p.read(1))
-	#endwhile
 
 	res = p.read(3)
 	transmitted = (res[1] << 8) + res[2]
 	print(transmitted)
 
 	print(repr(p.read(1)))
-#enddef
+
 
 def main():
 	global command, fn
@@ -53,12 +54,10 @@ def main():
 	if command not in ('recv', 'send'):
 		print('unknown command %s!' % command)
 		return
-	#endif
 
 	if not fns:
 		print('filename(s) not specified!')
 		return
-	#endif
 
 	p = serial.Serial(dev)
 
@@ -66,7 +65,6 @@ def main():
 	while p.inWaiting():
 		p.read(1)
 		print('.')
-	#endwhile
 
 	print('reset')
 	reset(p)
@@ -83,15 +81,13 @@ def main():
 			f.close()
 			send(p, buf)
 			time.sleep(1)
-		#endfor
 
 		p.write(b'\x00' * 10)
 		#time.sleep(1)
 		p.close()
 		return
-	#endif
 
-	buf = ''
+	buf = b''
 	while 1:
 		buf += p.read(1)
 		print('.')
@@ -102,10 +98,9 @@ def main():
 			f.write(buf)
 			f.close()
 			break
-		#endif
-	#endwhile
 
 	p.close()
-#enddef
 
-if __name__ == '__main__': main()
+
+if __name__ == '__main__':
+	main()
